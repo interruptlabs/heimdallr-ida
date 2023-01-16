@@ -2,7 +2,7 @@
 
 **BETA SUPPORT ONLY - MAC OS SUPPORT ONLY**
 
-The Heimdallr IDA plugin exposes a localhost gRPC server for each IDA instances which allows the Heimdallr client to navigate to locations in IDA.
+The Heimdallr IDA plugin exposes a localhost gRPC server for each IDA instances which allows the [Heimdallr client](https://github.com/interruptlabs/heimdallr-client) to navigate to locations in IDA.
 
 # Installation
 
@@ -21,7 +21,7 @@ heimdallr.install()
 Starting server on 127.0.0.1:51278
 Wrote {"pid": 36813, "address": "127.0.0.1:51278", "file_name": "example.i64", "file_hash": "b058de795064344a4074252e15b9fd39"} to /Users/roberts/.idapro/heimdallr/36813
 ```
-6. Install heimdallr_client
+6. Install [heimdallr-client](https://github.com/interruptlabs/heimdallr-client)
 
 # Usage
 
