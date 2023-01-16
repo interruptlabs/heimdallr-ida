@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "heimdallr-ida"
+version = "0.4.0"
+description = "gRPC server for remotely navigating to locations in IDA"
+authors = ["Robert S <info@interruptlabs.co.uk>"]
+readme = "README.md"
+packages = [
+    {include = "heimdallr.py"},
+    {include = "heimdallr_utils"},
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+heimdallr-grpc = { git = "ssh://git@github.com/interruptlabs/heimdallr-grpc.git"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
