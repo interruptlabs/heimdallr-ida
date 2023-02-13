@@ -15,13 +15,13 @@ The Heimdallr IDA plugin exposes a localhost gRPC server for each IDA instances 
 import heimdallr
 heimdallr.install()
 ```
-5. Launch IDA and verify gRPC server sucessfully started up. You should something like the following in the output console:
+3. Relaunch IDA and verify gRPC server sucessfully started up. You should something like the following in the output console:
 ```
 [Heimdallr RPC] Plugin version 0.0.1
 Starting server on 127.0.0.1:51278
 Wrote {"pid": 36813, "address": "127.0.0.1:51278", "file_name": "example.i64", "file_hash": "b058de795064344a4074252e15b9fd39"} to /Users/roberts/.idapro/heimdallr/36813
 ```
-6. Install [heimdallr-client](https://github.com/interruptlabs/heimdallr-client)
+4. Install [heimdallr-client](https://github.com/interruptlabs/heimdallr-client)
 
 # Usage
 
