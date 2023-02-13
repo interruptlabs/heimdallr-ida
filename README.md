@@ -8,8 +8,8 @@ The Heimdallr IDA plugin exposes a localhost gRPC server for each IDA instances 
 
 
 1. Install ida with pip ([ensure the pip you are using matches the python environment IDA is using](#IDA-doesnt-pick-up-dependencies))
-    a. Using git directly `pip3 install -e git+ssh://git@github.com/interruptlabs/heimdallr-ida.git#egg=heimdallr_ida`
-    b. From a cloned repo `pip3 install -e .`
+    - Using git directly `pip3 install -e git+ssh://git@github.com/interruptlabs/heimdallr-ida.git#egg=heimdallr_ida`
+    - From a cloned repo `pip3 install -e .`
 2. Launch IDA and enter the following into the console
 ```
 import heimdallr
