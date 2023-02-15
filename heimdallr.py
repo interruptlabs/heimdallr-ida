@@ -11,6 +11,7 @@ default_config = """
   "idb_path": [
     ""
   ]
+"heimdallr_client" : "heimdallr_client"
 }
 """
 
