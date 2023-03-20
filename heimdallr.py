@@ -10,7 +10,7 @@ default_config = """
   "ida_location": "",
   "idb_path": [
     ""
-  ]
+  ],
 "heimdallr_client" : "heimdallr_client"
 }
 """

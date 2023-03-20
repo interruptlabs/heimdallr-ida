@@ -11,7 +11,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-heimdallr-grpc = { git = "ssh://git@github.com/interruptlabs/heimdallr-grpc.git"}
+heimdallr-grpc = { git = "https://git@github.com/interruptlabs/heimdallr-grpc.git"}
 
 
 [build-system]
