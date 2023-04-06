@@ -62,6 +62,7 @@ def install():
         print(f"Error: Existing plugin exists at {install_path}")
     
     config_path = heimdallr_path / "settings.json"
+    heimdallr_path.mkdir(parents=True, exist_ok=True)
     if not config_path.exists():
         config = json.loads(default_config)
         ida_path = Path(sys.executable)
