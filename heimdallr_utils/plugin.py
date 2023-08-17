@@ -146,14 +146,28 @@ def bring_to_front():
     """Brings IDA into focus"""
     focus_window()
 
+def get_ea(address : str) -> int:
+    ea = idc.BADADDR
+    try:
+        return int(address, 16)
+    except ValueError:
+        pass
+    
+    ea = idc.get_name_ea_simple(address)
+    if ea == idc.BADADDR:
+        raise RuntimeError(f"Unable to find {address}")
+    
+    return ea
+
 @ida_thread_sync
-def goto(addr : int):
+def goto(addr : str):
     """Goto to position addr
 
     Args:
     - addr - address to goto
     """
-    ida_kernwin.jumpto(addr)
+    
+    ida_kernwin.jumpto(get_ea(addr))
 
 @ida_thread_sync
 def is_view_type(type):
@@ -192,7 +206,7 @@ def switch_to_pseudo(addr : int):
 """
 Main thread seems to need time to execute the GUI actions
 """
-def goto_disasm(addr : int):
+def goto_disasm(addr : str):
     """Implementation of idaRPC.disasmGoTo"""
     bring_to_front()
     if not is_view_type(ida_kernwin.BWN_DISASM):
@@ -200,7 +214,7 @@ def goto_disasm(addr : int):
         switch_to_diasm()
     goto(addr)
 
-def goto_psudo(addr : int):
+def goto_psudo(addr : str):
     """Implementation of idaRPC.pseudoGoTo"""
     bring_to_front()
     if not is_view_type(ida_kernwin.BWN_PSEUDOCODE):
@@ -208,7 +222,7 @@ def goto_psudo(addr : int):
         switch_to_pseudo(addr)
     goto(addr)
 
-def goto_generic(addr : int):
+def goto_generic(addr : str):
     """Implementation of idaRPC.genericgoTo"""
 
     bring_to_front()
@@ -260,7 +274,7 @@ def create_link(addr : int, view_str : Optional[str] = None) -> str:
     file_name = Path(idc.get_idb_path()).name
     file_hash : bytes  = ida_nalt.retrieve_input_file_md5().hex()
     
-    uri = f"ida://{url_quote(file_name)}?offset={hex(addr)}&type=ida&hash={file_hash}"
+    uri = f"disas://{url_quote(file_name)}?offset={hex(addr)}&type=ida&hash={file_hash}"
     if view_str:
         uri += f"&view={view_str}"
     
@@ -368,29 +382,31 @@ def register_actions():
 
             print('Failed to attach to menu '+ action['id'])
 
+
+    
+
 # RPC Server Class
 class idaRPC(heimdallr_pb2_grpc.idaRPC):
     """Implements the idaRPC protocol from heimdallr-grpc"""
     def disasmGoTo (
             self, request: heimdallr_pb2.GoToRequest,
             context: grpc.ServicerContext) -> heimdallr_pb2.ResponseCode:
-        print(f"[Heimdallr RPC] GoTo Disassembly request {request.address} size {request.size}")
-        # goto_disasm(int(request.address, 16)) # Currently borked as can't activate windowcat
-        goto_disasm(int(request.address, 16))
+        print(f"[Heimdallr RPC] GoTo Disassembly request  {request.address} size {request.size}")
+        goto_disasm(request.address)
 
         return heimdallr_pb2.ResponseCode(Response=heimdallr_pb2.Resp_Success)
     def pseudoGoTo(
             self, request: heimdallr_pb2.GoToRequest,
             context: grpc.ServicerContext) -> heimdallr_pb2.ResponseCode:
         print(f"[Heimdallr RPC] GoTo Pseudocode request  {request.address} size {request.size}")
-        goto_psudo(int(request.address, 16))
+        goto_psudo(request.address)
         return heimdallr_pb2.ResponseCode(Response=heimdallr_pb2.Resp_Success)
     
     def genericGoTo(
             self, request: heimdallr_pb2.GoToRequest,
             context: grpc.ServicerContext) -> heimdallr_pb2.ResponseCode:
         print(f"[Heimdallr RPC] GoTo request  {request.address} size {request.size}")
-        goto_generic(int(request.address, 16))
+        goto_generic(request.address)
         return heimdallr_pb2.ResponseCode(Response=heimdallr_pb2.Resp_Success)
 
 def port_available(port_no) -> bool:

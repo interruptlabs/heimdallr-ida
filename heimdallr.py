@@ -52,7 +52,9 @@ def install():
     plugin_path.mkdir(parents=True, exist_ok=True)
     installee = Path(__file__)
     install_path = plugin_path / installee.name
-    if not install_path.exists() and not installee.is_relative_to(plugin_path):
+    if install_path.exists() and installee.is_symlink():
+        installee.unlink()
+    if not install_path.exists():
         os.symlink(installee, install_path)
         print(f"Symlinked plugin to {install_path}")
         completed = True
@@ -93,7 +95,7 @@ def uninstall():
     plugin_path = idauser_path / "plugins"
     installee = Path(__file__)
     install_path = plugin_path / installee.name
-    if install_path.exists() and not installee.is_relative_to(plugin_path):
+    if install_path.exists() and installee.is_symlink():
         os.remove(install_path)
         print(f"Removed symlink at {install_path}")
         completed = True
