@@ -36,7 +36,7 @@ from pathlib import Path
 
 
 # Constants
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 port_base = 40000
 port_max =  65535
 offset_step = 1009
@@ -260,7 +260,7 @@ def create_link(addr : int, view_str : Optional[str] = None) -> str:
     file_name = Path(idc.get_idb_path()).name
     file_hash : bytes  = ida_nalt.retrieve_input_file_md5().hex()
     
-    uri = f"ida://{url_quote(file_name)}?offset={hex(addr)}&hash={file_hash}"
+    uri = f"ida://{url_quote(file_name)}?offset={hex(addr)}&type=ida&hash={file_hash}"
     if view_str:
         uri += f"&view={view_str}"
     
@@ -489,11 +489,108 @@ def update_history() -> None:
     # prepend new items to front
     local_history = combined + local_history
     if len(local_history) > history_size:
-        local_history[:history_size]
+        local_history = local_history[:history_size]
+
+    
 
     # write new history json
     with open(history_path, "w") as fd:
         json.dump(local_history, fd)
+    
+    # Release lock
+    lock_path.unlink()
+
+def convert_history_to_v2() -> None:
+    """Converts between history version 1 and 2. Assumes history lock is taken."""
+    global idauser_path
+    
+    history_path : Path = idauser_path / "history.json"
+    new_history_path : Path = idauser_path / "history.2.json"
+
+    local_history = []
+    if not history_path.exists():
+        return
+
+    with open(history_path, "r") as fd:
+        local_history = json.load(fd)
+    
+    dict_history = {'files' : None, 'hash_table' : {}}
+    dict_history['files'] = local_history
+    
+    with open(new_history_path, "w") as fd:
+        json.dump(dict_history, fd)
+    
+    if new_history_path.exists():
+        history_path.unlink()
+
+
+def update_history_v2() -> None:
+    """Updates the history.json file from IDAs internal registry. Required for cross platform access to IDAs weird
+    windows registry format without opening IDA. V2 adds hashes to the history for quicker lookup."""
+    global idauser_path
+        
+    # check lock
+    lock_path = idauser_path / "history.lock"
+
+    if lock_path.exists():
+        rel = time.time() - lock_path.stat().st_atime
+        print(f"Lock exists on history file, unable to update {lock_path}, age {rel}s")
+        if rel < (60 * 60):
+            return
+        # Deletes after 1 hour - lock should only be held for a few seconds 
+        print(f"Lock is old, removing")
+        lock_path.unlink()
+    
+    # take lock
+    lock_path.touch()
+    # update if needed
+    convert_history_to_v2()
+    
+    # get current history json
+
+    history_path = idauser_path / "history.2.json"
+    file_history = []
+    hash_table = {}
+    dict_history = {'files' : None, 'hash_table' : {}}
+    if history_path.exists():
+        with open(history_path, "r") as fd:
+            dict_history = json.load(fd)
+        file_history = dict_history['files']
+        hash_table = dict_history['hash_table']
+            
+    # get ida history
+
+    history = ida_registry.reg_read_strlist("History")
+    history64 = ida_registry.reg_read_strlist("History64")
+    
+    # Interleaves the history files. Ensures they can't just keep each other out
+    combined = [x for x in itertools.chain(*itertools.zip_longest(history, history64)) if x is not None]
+
+    # remove existing items
+    if len(file_history) > 0:
+        for item in combined:
+            if item in file_history:
+                file_history.remove(item)
+    
+    # prepend new items to front
+    file_history = combined + file_history
+    if len(file_history) > history_size:
+        file_history = file_history[:history_size]
+        
+    current_file = idc.get_idb_path()
+    hash_table[current_file] = ida_nalt.retrieve_input_file_md5().hex()
+
+    for item in hash_table.copy().keys():
+        if item not in file_history:
+            print(item)
+            hash_table.pop(item)    
+    
+    dict_history['files'] = file_history
+    dict_history['hash_table'] = hash_table
+    
+    # write new history json
+    with open(history_path, "w") as fd:
+        json.dump(dict_history, fd)
     
     # Release lock
     lock_path.unlink()
@@ -528,7 +625,7 @@ class heimdallrRPC(ida_idaapi.plugin_t):
         if self.rpc_server is None:
             print("[Heimdallr RPC] Plugin version {}".format(VERSION))
             self.setup_rpc()
-            update_history()
+            update_history_v2()
             register_actions()
         return ida_idaapi.PLUGIN_KEEP
 

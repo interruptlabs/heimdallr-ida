@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "heimdallr-ida"
-version = "0.4.0"
+version = "0.5.0"
 description = "gRPC server for remotely navigating to locations in IDA"
 authors = ["Robert S <info@interruptlabs.co.uk>"]
 readme = "README.md"
