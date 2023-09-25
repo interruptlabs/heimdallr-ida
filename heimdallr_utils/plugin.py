@@ -274,9 +274,10 @@ def create_link(addr : int, view_str : Optional[str] = None) -> str:
     file_name = Path(idc.get_idb_path()).name
     file_hash : bytes  = ida_nalt.retrieve_input_file_md5().hex()
     
-    uri = f"disas://{url_quote(file_name)}?offset={hex(addr)}&type=ida&hash={file_hash}"
     if view_str:
-        uri += f"&view={view_str}"
+        return f"disas://{file_hash}?view={view_str}&offset={hex(addr)}&idb={url_quote(file_name)}"
+    
+    return f"disas://{file_hash}?offset={hex(addr)}&idb={url_quote(file_name)}"
     
     return uri
 
