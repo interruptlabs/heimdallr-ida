@@ -44,6 +44,12 @@ If you want to make a link to share with someone else, pressing "Ctrl+Alt+N", an
 
 This currently only works for the Disassembly and Pseudocode views.
 
+# Ghidra Cross Compatabiltity
+
+The wonderful people over at Foundry Zero have created a Ghidra plugin which offers the same functionality. You can get it [here](https://github.com/foundryzero/ghidra-deep-links)
+
+The plugins are compatible, meaning links created with their plugin can be opened in IDA with this client, and vice versa. This allows you to collaborate with other researchers regardless of the disassembler you use!
+
 # Common Issues
 
 ## IDA doesn't pick up dependencies
